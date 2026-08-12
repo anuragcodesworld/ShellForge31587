@@ -18,20 +18,24 @@ int main(void)
     {
         char *line = readline("shellforge$ ");
 
+        /* Ctrl + D */
         if (line == NULL)
         {
             printf("\nGoodbye!\n");
             break;
         }
 
+        /* Ignore empty input */
         if (strlen(line) == 0)
         {
             free(line);
             continue;
         }
 
+        /* Add command to history */
         add_history(line);
 
+        /* Exit command */
         if (strcmp(line, "exit") == 0)
         {
             free(line);
@@ -39,7 +43,24 @@ int main(void)
             break;
         }
 
-        /* Send the command to the lexer */
+        /* History command */
+        if (strcmp(line, "history") == 0)
+        {
+            HIST_ENTRY **hist = history_list();
+
+            if (hist != NULL)
+            {
+                for (int i = 0; hist[i] != NULL; i++)
+                {
+                    printf("%d  %s\n", i + 1, hist[i]->line);
+                }
+            }
+
+            free(line);
+            continue;
+        }
+
+        /* Send command to lexer */
         TokenList *tokens = lex(line);
 
         if (tokens == NULL)
@@ -50,6 +71,7 @@ int main(void)
 
         printf("\nTokens:\n");
 
+        /* Display tokens */
         for (int i = 0; i < tokens->count; i++)
         {
             Token *token = &tokens->tokens[i];
@@ -84,6 +106,7 @@ int main(void)
 
         printf("\n");
 
+        /* Free memory */
         free_tokens(tokens);
         free(line);
     }
