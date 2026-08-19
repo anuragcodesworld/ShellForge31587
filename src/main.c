@@ -7,11 +7,14 @@
 
 #include "lexer.h"
 #include "token.h"
+#include "parser.h"
+#include "expand.h"
 
 int main(void)
 {
     printf("=====================================\n");
-    printf("        Welcome to Shellforge\n");
+    printf("            Shellforge\n");
+    printf("     A Unix Style Shell written in C\n");
     printf("=====================================\n");
 
     while (1)
@@ -35,7 +38,7 @@ int main(void)
         /* Add command to history */
         add_history(line);
 
-        /* Exit command */
+        /* Exit */
         if (strcmp(line, "exit") == 0)
         {
             free(line);
@@ -43,7 +46,7 @@ int main(void)
             break;
         }
 
-        /* History command */
+        /* History */
         if (strcmp(line, "history") == 0)
         {
             HIST_ENTRY **hist = history_list();
@@ -60,7 +63,10 @@ int main(void)
             continue;
         }
 
-        /* Send command to lexer */
+        /*
+         * STEP 1:
+         * Tokenize / Lex the input.
+         */
         TokenList *tokens = lex(line);
 
         if (tokens == NULL)
@@ -69,9 +75,11 @@ int main(void)
             continue;
         }
 
-        printf("\nTokens:\n");
+        /*
+         * Display TOKENS
+         */
+        printf("\n-------------- TOKENS --------------\n");
 
-        /* Display tokens */
         for (int i = 0; i < tokens->count; i++)
         {
             Token *token = &tokens->tokens[i];
@@ -79,34 +87,72 @@ int main(void)
             switch (token->type)
             {
                 case TOKEN_WORD:
-                    printf("WORD         : %s\n", token->value);
+                    printf("%d : WORD          %s\n",
+                           i, token->value);
                     break;
 
                 case TOKEN_PIPE:
-                    printf("PIPE         : %s\n", token->value);
+                    printf("%d : PIPE          %s\n",
+                           i, token->value);
                     break;
 
                 case TOKEN_REDIRECT_IN:
-                    printf("REDIRECT_IN  : %s\n", token->value);
+                    printf("%d : REDIRECT_IN   %s\n",
+                           i, token->value);
                     break;
 
                 case TOKEN_REDIRECT_OUT:
-                    printf("REDIRECT_OUT : %s\n", token->value);
+                    printf("%d : REDIRECT_OUT  %s\n",
+                           i, token->value);
                     break;
 
                 case TOKEN_APPEND:
-                    printf("APPEND       : %s\n", token->value);
+                    printf("%d : APPEND        %s\n",
+                           i, token->value);
                     break;
 
                 case TOKEN_END:
-                    printf("END\n");
+                    printf("%d : END           END\n",
+                           i);
                     break;
             }
         }
 
-        printf("\n");
+        printf("------------------------------------\n");
 
-        /* Free memory */
+        /*
+         * STEP 2:
+         * Expand environment variables.
+         *
+         * Example:
+         * $HOME -> /home/anuragashu
+         */
+        expand_tokens(tokens);
+
+        /*
+         * STEP 3:
+         * Parse tokens into a pipeline.
+         */
+        Pipeline *pipeline = parse(tokens);
+
+        if (pipeline == NULL)
+        {
+            free_tokens(tokens);
+            free(line);
+            continue;
+        }
+
+        /*
+         * STEP 4:
+         * Display parsed pipeline.
+         */
+        print_pipeline(pipeline);
+
+        /*
+         * STEP 5:
+         * Free memory.
+         */
+        free_pipeline(pipeline);
         free_tokens(tokens);
         free(line);
     }
