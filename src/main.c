@@ -9,6 +9,8 @@
 #include "token.h"
 #include "parser.h"
 #include "expand.h"
+#include "builtin.h"
+#include "executor.h"
 
 int main(void)
 {
@@ -38,15 +40,9 @@ int main(void)
         /* Add command to history */
         add_history(line);
 
-        /* Exit */
-        if (strcmp(line, "exit") == 0)
-        {
-            free(line);
-            printf("Exiting...\n");
-            break;
-        }
-
-        /* History */
+        /*
+         * HISTORY
+         */
         if (strcmp(line, "history") == 0)
         {
             HIST_ENTRY **hist = history_list();
@@ -64,8 +60,8 @@ int main(void)
         }
 
         /*
-         * STEP 1:
-         * Tokenize / Lex the input.
+         * STEP 1
+         * LEXER / TOKENIZER
          */
         TokenList *tokens = lex(line);
 
@@ -76,7 +72,7 @@ int main(void)
         }
 
         /*
-         * Display TOKENS
+         * Display tokens
          */
         printf("\n-------------- TOKENS --------------\n");
 
@@ -121,17 +117,14 @@ int main(void)
         printf("------------------------------------\n");
 
         /*
-         * STEP 2:
-         * Expand environment variables.
-         *
-         * Example:
-         * $HOME -> /home/anuragashu
+         * STEP 2
+         * VARIABLE EXPANSION
          */
         expand_tokens(tokens);
 
         /*
-         * STEP 3:
-         * Parse tokens into a pipeline.
+         * STEP 3
+         * PARSER
          */
         Pipeline *pipeline = parse(tokens);
 
@@ -143,18 +136,57 @@ int main(void)
         }
 
         /*
-         * STEP 4:
-         * Display parsed pipeline.
+         * Display parsed pipeline
          */
         print_pipeline(pipeline);
 
         /*
-         * STEP 5:
-         * Free memory.
+         * STEP 4
+         * EXECUTION
+         */
+        int should_exit = 0;
+
+        for (int i = 0; i < pipeline->count; i++)
+        {
+            command_t *cmd = &pipeline->commands[i];
+
+            if (cmd->argc == 0)
+            {
+                continue;
+            }
+
+            /*
+             * Execute builtin or external command.
+             */
+            int status = execute_command(cmd);
+
+            /*
+             * builtin_exit() returns 1.
+             */
+            if (status == 1 &&
+                strcmp(cmd->argv[0], "exit") == 0)
+            {
+                should_exit = 1;
+                break;
+            }
+        }
+
+        /*
+         * STEP 5
+         * CLEANUP
          */
         free_pipeline(pipeline);
         free_tokens(tokens);
         free(line);
+
+        /*
+         * Exit the shell after cleanup.
+         */
+        if (should_exit)
+        {
+            printf("Exiting...\n");
+            break;
+        }
     }
 
     return 0;
