@@ -3,10 +3,7 @@
 
 #include "builtin.h"
 
-/* Execute one command */
 int execute_command(command_t *cmd);
-
-/* Execute an entire pipeline */
-int execute_pipeline(Pipeline *pipeline);
+int execute_pipeline(Pipeline *p);
 
 #endif

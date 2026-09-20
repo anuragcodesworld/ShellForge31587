@@ -119,12 +119,17 @@ int main(void)
         /*
          * STEP 2
          * VARIABLE EXPANSION
+         *
+         * Example:
+         * $HOME -> /home/anuragashu
          */
         expand_tokens(tokens);
 
         /*
          * STEP 3
          * PARSER
+         *
+         * Convert tokens into a Pipeline.
          */
         Pipeline *pipeline = parse(tokens);
 
@@ -136,18 +141,26 @@ int main(void)
         }
 
         /*
-         * Display parsed pipeline
+         * Display parsed PIPELINE
          */
         print_pipeline(pipeline);
 
         /*
          * STEP 4
          * EXECUTE ENTIRE PIPELINE
+         *
+         * Example:
+         *
+         * echo hello | wc
+         *
+         * echo -> pipe -> wc
          */
         int status = execute_pipeline(pipeline);
 
         /*
-         * Handle exit builtin.
+         * Handle the exit builtin.
+         *
+         * builtin_exit() returns 1.
          */
         if (status == 1 &&
             pipeline->count == 1 &&
