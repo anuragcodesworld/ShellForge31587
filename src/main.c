@@ -102,12 +102,17 @@ int main(void)
                            i, token->value);
                     break;
 
-                case TOKEN_APPEND:
-                    printf("%d : APPEND        %s\n",
-                           i, token->value);
-                    break;
+case TOKEN_APPEND:
+    printf("%d : APPEND        %s\n",
+           i, token->value);
+    break;
 
-                case TOKEN_END:
+case TOKEN_BACKGROUND:
+    printf("%d : BACKGROUND    %s\n",
+           i, token->value);
+    break;
+
+case TOKEN_END:
                     printf("%d : END           END\n",
                            i);
                     break;

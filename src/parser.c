@@ -4,6 +4,7 @@
 
 #include "parser.h"
 
+
 static char *copy_string(const char *str)
 {
     if (str == NULL)
@@ -24,6 +25,7 @@ static char *copy_string(const char *str)
     return copy;
 }
 
+
 static void initialize_command(Command *command)
 {
     command->argc = 0;
@@ -37,6 +39,7 @@ static void initialize_command(Command *command)
         command->argv[i] = NULL;
     }
 }
+
 
 Pipeline *parse(TokenList *tokens)
 {
@@ -73,12 +76,15 @@ Pipeline *parse(TokenList *tokens)
             break;
         }
 
+
         /* Pipe */
         if (token->type == TOKEN_PIPE)
         {
             if (command_index + 1 >= MAX_COMMANDS)
             {
-                fprintf(stderr, "Too many commands in pipeline\n");
+                fprintf(stderr,
+                        "Too many commands in pipeline\n");
+
                 free_pipeline(pipeline);
                 return NULL;
             }
@@ -89,6 +95,15 @@ Pipeline *parse(TokenList *tokens)
             continue;
         }
 
+
+        /* Background */
+        if (token->type == TOKEN_BACKGROUND)
+        {
+            command->background = 1;
+            continue;
+        }
+
+
         /* Input redirection */
         if (token->type == TOKEN_REDIRECT_IN)
         {
@@ -96,12 +111,14 @@ Pipeline *parse(TokenList *tokens)
                 tokens->tokens[i + 1].type == TOKEN_WORD)
             {
                 i++;
+
                 command->input =
                     copy_string(tokens->tokens[i].value);
             }
 
             continue;
         }
+
 
         /* Output redirection */
         if (token->type == TOKEN_REDIRECT_OUT)
@@ -110,6 +127,7 @@ Pipeline *parse(TokenList *tokens)
                 tokens->tokens[i + 1].type == TOKEN_WORD)
             {
                 i++;
+
                 command->output =
                     copy_string(tokens->tokens[i].value);
 
@@ -119,6 +137,7 @@ Pipeline *parse(TokenList *tokens)
             continue;
         }
 
+
         /* Append redirection */
         if (token->type == TOKEN_APPEND)
         {
@@ -126,6 +145,7 @@ Pipeline *parse(TokenList *tokens)
                 tokens->tokens[i + 1].type == TOKEN_WORD)
             {
                 i++;
+
                 command->output =
                     copy_string(tokens->tokens[i].value);
 
@@ -134,6 +154,7 @@ Pipeline *parse(TokenList *tokens)
 
             continue;
         }
+
 
         /* Normal argument */
         if (token->type == TOKEN_WORD)
@@ -154,6 +175,7 @@ Pipeline *parse(TokenList *tokens)
 
     return pipeline;
 }
+
 
 void free_pipeline(Pipeline *pipeline)
 {
@@ -177,6 +199,7 @@ void free_pipeline(Pipeline *pipeline)
 
     free(pipeline);
 }
+
 
 void print_pipeline(Pipeline *pipeline)
 {

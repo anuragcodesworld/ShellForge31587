@@ -7,6 +7,7 @@ typedef enum {
     TOKEN_REDIRECT_IN,
     TOKEN_REDIRECT_OUT,
     TOKEN_APPEND,
+    TOKEN_BACKGROUND,
     TOKEN_END
 } TokenType;
 

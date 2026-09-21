@@ -31,7 +31,8 @@ static void add_token(TokenList *list, TokenType type, const char *value)
 
     if (value != NULL)
     {
-        list->tokens[list->count].value = malloc(strlen(value) + 1);
+        list->tokens[list->count].value =
+            malloc(strlen(value) + 1);
 
         if (list->tokens[list->count].value == NULL)
         {
@@ -49,6 +50,7 @@ static void add_token(TokenList *list, TokenType type, const char *value)
 
     list->count++;
 }
+
 
 TokenList *tokenize(const char *input)
 {
@@ -93,6 +95,14 @@ TokenList *tokenize(const char *input)
             continue;
         }
 
+        /* Background */
+        if (input[i] == '&')
+        {
+            add_token(list, TOKEN_BACKGROUND, "&");
+            i++;
+            continue;
+        }
+
         /* Input redirection */
         if (input[i] == '<')
         {
@@ -118,13 +128,18 @@ TokenList *tokenize(const char *input)
             continue;
         }
 
-        /* Normal word */
+        /*
+         * Normal word
+         *
+         * Stop the word when we encounter a shell operator.
+         */
         int start = i;
 
         while (input[i] != '\0' &&
                input[i] != ' ' &&
                input[i] != '\t' &&
                input[i] != '|' &&
+               input[i] != '&' &&
                input[i] != '<' &&
                input[i] != '>')
         {
@@ -156,6 +171,7 @@ TokenList *tokenize(const char *input)
     return list;
 }
 
+
 void free_tokens(TokenList *list)
 {
     if (list == NULL)
@@ -169,3 +185,4 @@ void free_tokens(TokenList *list)
     free(list->tokens);
     free(list);
 }
+
